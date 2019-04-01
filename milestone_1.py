@@ -10,8 +10,8 @@ def get_token_type(token):
         return "Comment"
     elif token.type == milestone_1Lexer.MultiLineComment:
         return "MultiLineComment"
-    # elif token.type ==milestone_1Lexer.REG:
-    #     return "REG"
+    elif token.type ==milestone_1Lexer.VARIABLE:
+        return "REG"
     # elif token.type == milestone_1Lexer.COMMAND:
     #     return "COMMAND"
     # elif token.type == milestone_1Lexer.MEMORY:
@@ -49,5 +49,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args.file)
-	
-    main()	
+
+    main()
