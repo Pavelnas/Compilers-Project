@@ -1,1 +1,1 @@
-REG var eachERROR UNKNOWN TOKEN 5
+VARIABLE var slsADDR addr
