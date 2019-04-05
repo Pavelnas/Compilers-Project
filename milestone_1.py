@@ -275,7 +275,7 @@ def main():
     token = lexer.nextToken()
     f= open("milestone_1_result.txt","w+")
     while not token.type == Token.EOF:
-        f.write(get_token_type(token) +" "+ token.text +"\n")
+        f.write(get_token_type(token) +"  "+ token.text +"\n")
         print(token.text, get_token_type(token))
         token = lexer.nextToken()
     f.close()

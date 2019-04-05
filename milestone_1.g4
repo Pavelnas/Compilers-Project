@@ -89,42 +89,36 @@ XOR: 'xor';
 
 ////////////////////////////////////
 YIELD: 'yield';
-IDENTIFIER: LETTER  ( ( [\_] (LETTER | DIGIT) ) | (LETTER|DIGIT) )* [\_]?; //handle if underscore is at the end of the identifier
+IDENTIFIER: LETTER  ( ( [_] (LETTER | DIGIT) ) | (LETTER|DIGIT) )* [_]?; //handle if underscore is at the end of the identifier
 LETTER: ( [A-Z] | [a-z] | [\u0080-\u00ff] ); //ask about unicode!
 DIGIT:  [0-9] ;
 
-INT8_LIT : INT_LIT [\'] ('i' | 'I') '8';
-INT16_LIT : INT_LIT ['\''] ('i' | 'I') '16';
-INT32_LIT : INT_LIT ['\''] ('i' | 'I') '32';
-INT64_LIT : INT_LIT ['\''] ('i' | 'I') '64';
+INT8_LIT : INT_LIT ['] ('i' | 'I') '8';
+INT16_LIT : INT_LIT ['] ('i' | 'I') '16';
+INT32_LIT : INT_LIT ['] ('i' | 'I') '32';
+INT64_LIT : INT_LIT ['] ('i' | 'I') '64';
 
-UINT_LIT : INT_LIT ['\''] ('u' | 'U');
-UINT8_LIT : INT_LIT ['\''] ('u' | 'U') '8';
-UINT16_LIT : INT_LIT ['\''] ('u' | 'U') '16';
-UINT32_LIT : INT_LIT ['\''] ('u' | 'U') '32';
-UINT64_LIT : INT_LIT ['\''] ('u' | 'U') '64';
-
-FLOAT_LIT : DIGIT (['_'] DIGIT | DIGIT)* ( ('.' DIGIT (['_'] DIGIT | DIGIT)*) | ('.' DIGIT (['_'] DIGIT | DIGIT)* EXP) |EXP);
+UINT_LIT : INT_LIT ['] ('u' | 'U');
+UINT8_LIT : INT_LIT ['] ('u' | 'U') '8';
+UINT16_LIT : INT_LIT ['] ('u' | 'U') '16';
+UINT32_LIT : INT_LIT ['] ('u' | 'U') '32';
+UINT64_LIT : INT_LIT ['] ('u' | 'U') '64';
+FLOAT_LIT : DIGIT ([_] DIGIT | DIGIT)* ( ('.' DIGIT ([_] DIGIT | DIGIT)*) | ('.' DIGIT ([_] DIGIT | DIGIT)* EXP) |EXP);
 FLOAT32_SUFFIX : ('f' | 'F') '32';
-FLOAT32_LIT : HEX_LIT '\'' FLOAT32_SUFFIX
-            | (FLOAT_LIT | DEC_LIT | OCT_LIT | BIN_LIT) ['\''] FLOAT32_SUFFIX;
+FLOAT32_LIT : HEX_LIT ['] FLOAT32_SUFFIX
+            | (FLOAT_LIT | DEC_LIT | OCT_LIT | BIN_LIT) ['] FLOAT32_SUFFIX;
 FLOAT64_SUFFIX : ( ('f' | 'F') '64' ) | 'd' | 'D';
-FLOAT64_LIT : HEX_LIT '\'' FLOAT64_SUFFIX
-            | (FLOAT_LIT | DEC_LIT | OCT_LIT | BIN_LIT) ['\''] FLOAT64_SUFFIX;
-
-EXP:  ('e' | 'E' ) ['+' | '-'] DIGIT ( ['_'] DIGIT | DIGIT )*;
-
+FLOAT64_LIT : HEX_LIT ['] FLOAT64_SUFFIX
+            | (FLOAT_LIT | DEC_LIT | OCT_LIT | BIN_LIT) ['] FLOAT64_SUFFIX;
+EXP:  ('e' | 'E' ) [+|-] DIGIT ( [_] DIGIT | DIGIT )*;
 INT_LIT : HEX_LIT | DEC_LIT | OCT_LIT | BIN_LIT ;
-
-HEX_LIT: '0' ('x' | 'X' )  HEXDIGIT  ( ([\_] HEXDIGIT)* | HEXDIGIT* ); //ask about 0xf_f or 0xff
-DEC_LIT: DIGIT ( [\_] DIGIT | DIGIT)*;
-OCT_LIT: '0' 'o' OCTDIGIT ( [\_] OCTDIGIT | OCTDIGIT )*;
-BIN_LIT: '0' ('b' | 'B' ) BINDIGIT ( [\_] BINDIGIT | BINDIGIT)*;
-
+HEX_LIT: '0' ('x' | 'X' )  HEXDIGIT  ( ([_] HEXDIGIT)* | HEXDIGIT* ); //ask about 0xf_f or 0xff
+DEC_LIT: DIGIT ( [_] DIGIT | DIGIT)*;
+OCT_LIT: '0' 'o' OCTDIGIT ( [_] OCTDIGIT | OCTDIGIT )*;
+BIN_LIT: '0' ('b' | 'B' ) BINDIGIT ( [_] BINDIGIT | BINDIGIT)*;
 HEXDIGIT: DIGIT | [A-F] | [a-f];
 OCTDIGIT: [0-7];
 BINDIGIT: [0|1];
-
 EQUALS_OPERATOR: '=' | '==';
 ADD_OPERATOR : '+';
 MUL_OPERATOR: '*';
@@ -137,7 +131,7 @@ LESS_THAN : '<';
 GREATER_THAN: '>';
 AT: '@';
 MODULUS: '%' ;
-NOT_OPERATOR :  '!' ; 
+NOT_OPERATOR :  '!' ;
 XOR_OPERATOR: '^' ;
 DOT: '.';
 COLON: ':';
@@ -149,13 +143,12 @@ OPEN_BRACK : '[';
 CLOSE_BRACK: ']';
 COMMA: ',';
 SEMI_COLON : ';';
-
 STR_LIT: '"' ( .*? ) '"' ; //should i handle escape characters tokenizations ?
-CHAR_LIT: '\'' (.?) '\'' | '\'' ESCAPE '\'' ;
-ESCAPE: '\\' ('p'| 'r' | 'c' | 'n' | 'l' | 'f' | 't' | 'v' | '\\' | '"' | '\'' | ('\''DIGIT '\'')+ | 'a' | 'b' | 'e' | '\'x' HEXDIGIT HEXDIGIT ) ; 
+CHAR_LIT: ['] (.?) ['] | ['] ESCAPE ['] ;
+ESCAPE: '\\' ('p'| 'r' | 'c' | 'n' | 'l' | 'f' | 't' | 'v' | '\\' | '"' | ['] | ([']DIGIT ['])+ | 'a' | 'b' | 'e' | '\'x' HEXDIGIT HEXDIGIT ) ;
 TRIPLESTR_LIT : '"""' TRIPLESTR_ITEM '"""';
 TRIPLESTR_ITEM : (.*?);
-RSTR_LIT: ('r'| 'R') ('"') (.*?) '"'; //do i need to handle "" in middle ? 
+RSTR_LIT: ('r'| 'R') ('"') (.*?) '"'; //do i need to handle "" in middle ?
 GENERALIZED_STR_LIT : IDENTIFIER  STR_LIT ;
 GENERALIZED_TRIPLESTR_LIT: IDENTIFIER TRIPLESTR_LIT;
 
