@@ -145,10 +145,10 @@ def get_token_type(token):
         return "XOR"
 
     ##################
-    
+
     elif token.type ==milestone_1Lexer.IDENTIFIER:
         return "IDENTIFIER"
-    elif token.type ==milestone_1Lexer.SPACE: #to be removed later 
+    elif token.type ==milestone_1Lexer.SPACE: #to be removed later
         return "Space"
     elif token.type == milestone_1Lexer.YIELD:
         return "YIELD"
@@ -275,7 +275,7 @@ def main():
     token = lexer.nextToken()
     f= open("milestone_1_result.txt","w+")
     while not token.type == Token.EOF:
-        f.write(get_token_type(token) +" "+ token.text +"\n")
+        f.write(get_token_type(token) +"  "+ token.text +"\n")
         print(token.text, get_token_type(token))
         token = lexer.nextToken()
     f.close()
@@ -288,5 +288,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args.file)
-	
-    main()	
+
+    main()
