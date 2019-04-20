@@ -256,29 +256,59 @@ def get_token_type(token):
         return "GENERALIZED_TRIPLESTR_LIT"
     elif token.type == milestone_2Lexer.INDENT:
         return "INDENT"
-
+    # elif token.type == milestone_2Lexer.OP5:
+    #     return "OP5"
+    elif token.type == milestone_2Lexer.INT:
+        return "INT"
+    elif token.type == milestone_2Lexer.NEWLINE:
+        return "NEWLINE"
+    elif token.type == milestone_2Lexer.SPACE:
+        return "SPACE"
+    elif token.type == milestone_2Lexer.ECHO:
+        return "ECHO"
+    elif token.type == milestone_2Lexer.STRING:
+        return "STRING"
+ 
+    
+    
+    
     else:
+        print (str(token.type)) 
         return "ERROR UNKNOWN TOKEN"
+        
 
 def main():
 
-    with open(args.file, "r") as file:
+    with open("input.txt", "r") as file:
         lines = file.read()
     input_stream = InputStream(lines)
     lexer = milestone_2Lexer(input_stream)
     token_stream = CommonTokenStream(lexer)
     parser = milestone_2Parser(token_stream)
 
- #   tree = parser.start()
- #   print(Trees.toStringTree(tree,None, parser))
+    try:
+        tree = parser.start()
+        print(Trees.toStringTree(tree,None, parser))
+        print(parser.getNumberOfSyntaxErrors() )#> 1) 
+    except:
+        print("ERORR")
 
+    ######################################
     token = lexer.nextToken()
     f= open("milestone_1_result.txt","w+")
     while not token.type == Token.EOF:
         f.write(get_token_type(token) +"  "+ token.text +"\n")
-        print(token.text, get_token_type(token))
+        # print(token.text, get_token_type(token))
         token = lexer.nextToken()
     f.close()
+    ################################################33
+    f= open("“milestone_2_result.txt","w+")
+    if parser.getNumberOfSyntaxErrors() == 0:
+        f.write("valid")
+    else:
+        f.write("invalid")
+    f.close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(add_help=True, description='Sample Commandline')
