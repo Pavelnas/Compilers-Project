@@ -279,34 +279,35 @@ def get_token_type(token):
 
 def main():
 
-    with open("input.txt", "r") as file:
+    with open(args.file, "r") as file:
         lines = file.read()
     input_stream = InputStream(lines)
     lexer = milestone_2Lexer(input_stream)
     token_stream = CommonTokenStream(lexer)
     parser = milestone_2Parser(token_stream)
 
-    try:
-        tree = parser.start()
-        print(Trees.toStringTree(tree,None, parser))
-        print(parser.getNumberOfSyntaxErrors() )#> 1) 
-    except:
-        print("ERORR")
+    
+    tree = parser.start()
+        # print(Trees.toStringTree(tree,None, parser))
+    # print(parser.getNumberOfSyntaxErrors() )#> 1) 
+    
 
     ######################################
-    token = lexer.nextToken()
-    f= open("milestone_1_result.txt","w+")
-    while not token.type == Token.EOF:
-        f.write(get_token_type(token) +"  "+ token.text +"\n")
-        # print(token.text, get_token_type(token))
-        token = lexer.nextToken()
-    f.close()
+    # token = lexer.nextToken()
+    # f= open("milestone_1_result.txt","w+")
+    # while not token.type == Token.EOF:
+    #     f.write(get_token_type(token) +"  "+ token.text +"\n")
+    #     # print(token.text, get_token_type(token))
+    #     token = lexer.nextToken()
+    # f.close()
     ################################################33
-    f= open("“milestone_2_result.txt","w+")
+    f= open("milestone_2_result.txt","w+")
     if parser.getNumberOfSyntaxErrors() == 0:
         f.write("valid")
+        print("valid")
     else:
         f.write("invalid")
+        print("invalid")
     f.close()
 
 
@@ -317,6 +318,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print(args.file)
+    # print(args.file)
 	
     main()	

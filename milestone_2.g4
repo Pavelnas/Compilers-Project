@@ -1,5 +1,5 @@
 grammar milestone_2; 
-start : module EOF;
+
         
         // VARIABLE | AND | ADDR | AS | ASM | BIND | BLOCK | BREAK | CASE | CAST | CONCEPT | CONST | CONTINUE | CONVERTER |
         // DEFER | DISCARD | DISTINCT | DIV | DO | ELIF | ELSE | END | ENUM | EXCEPT | EXPORT | FINALLY | FOR | FROM | FUNC |
@@ -19,22 +19,22 @@ start : module EOF;
 /////grammar related rules
 //////////////////
 
-module : (stmt ( (';' | INDENT) stmt? )*)?;
+start : (stmt ( ';' stmt )*)? EOF; // removed indent
 
 
-comma: COMMA COMMENT?;
-semicolon : SEMI_COLON COMMENT?;
+comma: COMMA ;
+semicolon : SEMI_COLON ;
 
-colcom : COLON COMMENT? ;//('\n')* ; //added \n to avoid extraneous input
+colcom : COLON ;//('\n')* ; //added \n to avoid extraneous input
 
 operator : EQUALS_OPERATOR| ADD_OPERATOR | AND_OPERATOR | OR_OPERATOR | BITWISE_NOT_OPERATOR | DIV_OPERATOR ///op0 op1 ???
          | MINUS_OPERATOR | MUL_OPERATOR | NOT_OPERATOR | XOR_OPERATOR 
-        | OR | XOR | AND | IS | ISNOT | IN | NOTIN | OF | DIV | MOD | SHL | SHR | NOT | STATIC | '..' ;
+        | OR | XOR | AND | IS | ISNOT | IN | NOTIN | OF | DIV | MOD | SHL | SHR | NOT | STATIC | '..'|MOD ;
 
 prefixOperator : operator; //added for trial
  
-optInd : COMMENT? INDENT?; // IND?; what is IND ?????????????????????????????????????????????????????????????
-optPar : INDENT?; //(IND{>} | IND{=})?////////////////////////////
+optInd : COMMENT? ; // IND?; what is IND ?????????????????????????????????????????????????????????????
+// optPar : INDENT?; //(IND{>} | IND{=})?////////////////////////////
 simpleExpr :arrowExpr (op0 optInd arrowExpr)* pragma?  ; 
 //arrowExpr (op0 optInd arrowExpr)* pragma?//////////////////////
 
@@ -76,7 +76,7 @@ dotExpr : expr DOT optInd (symbol | '[:' exprList ']');
 explicitGenericInstantiation : '[:' exprList ']' ( '(' exprColonEqExpr ')' ) ? ;
 qualifiedIdent : symbol ('.' optInd symbol)?;
 setOrTableConstr : '{' ((exprColonEqExpr comma)* | COLON ) '}'; 
-castExpr : CAST '[' optInd typeDesc optPar ']' '(' optInd expr optPar ')';
+castExpr : CAST '[' optInd typeDesc  ']' '(' optInd expr  ')';
 
 parKeyw : DISCARD | 'include' | IF | WHILE | CASE | TRY
         | FINALLY | EXCEPT | FOR | BLOCK | CONST | LET
@@ -87,7 +87,7 @@ par : OPEN_PAREN optInd
           | pragmaStmt
           | simpleExpr ( (EQUALS_OPERATOR expr (SEMI_COLON complexOrSimpleStmt ( SEMI_COLON complexOrSimpleStmt)* )? )
                        | (COLON expr (COMMA exprColonEqExpr ( COMMA exprColonEqExpr)* )? ) ) )
-          optPar CLOSE_PAREN;
+           CLOSE_PAREN;
 literal : INT_LIT | INT8_LIT | INT16_LIT | INT32_LIT | INT64_LIT
           | UINT_LIT | UINT8_LIT | UINT16_LIT | UINT32_LIT | UINT64_LIT
           | FLOAT_LIT | FLOAT32_LIT | FLOAT64_LIT
@@ -97,16 +97,17 @@ literal : INT_LIT | INT8_LIT | INT16_LIT | INT32_LIT | INT64_LIT
 
 generalizedLit : GENERALIZED_STR_LIT | GENERALIZED_TRIPLESTR_LIT;
 identOrLiteral : (DIGIT+| generalizedLit | symbol | literal
-               | par | arrayConstr | setOrTableConstr
+               | par | AT? arrayConstr | setOrTableConstr
                | castExpr | proEXPR  )  ;
-proEXPR: IDENTIFIER? OPEN_PAREN ( declColonEquals ( (comma|semicolon)? declColonEquals)* ) ? CLOSE_PAREN assignExpr?;
-tupleConstr : '(' optInd exprColonEqExpr?(comma exprColonEqExpr)* optPar ')'; //also changed the ? with a + to avoid an error
-arrayConstr : '[' optInd exprColonEqExpr?(comma exprColonEqExpr)* optPar ']'; //also changed the ? with a + to avoid an error
+proEXPR: IDENTIFIER? OPEN_PAREN ( declColonEquals ( (comma|semicolon)? declColonEquals)* ) ? CLOSE_PAREN assignExpr?
+      | IDENTIFIER OPEN_PAREN+ proEXPR (operator expr CLOSE_PAREN)+ ;
+tupleConstr : '(' optInd exprColonEqExpr?(comma exprColonEqExpr)*  ')'; //also changed the ? with a + to avoid an error
+arrayConstr : '[' optInd exprColonEqExpr?(comma exprColonEqExpr)*  ']' | OPEN_BRACK types CLOSE_BRACK; //also changed the ? with a + to avoid an error
 primarySuffix : '(' exprColonEqExpr?(comma exprColonEqExpr )* ')' doBlocks? //also changed the ? with a + to avoid an error
       | doBlocks
-      | DOT optInd symbol (generalizedLit? | (OPEN_PAREN symbol CLOSE_PAREN) ) //added open paren.....>
-      | '[' optInd exprList optPar ']' // changed indexExprList to expr LIst as it is not founddd in doc!
-      | '{' optInd exprList optPar '}'
+      |  DOT optInd symbol (generalizedLit? | (OPEN_PAREN symbol CLOSE_PAREN) ) //added open paren.....>
+      | '[' optInd exprList  ']' // changed indexExprList to expr LIst as it is not founddd in doc!
+      | '{' optInd exprList  '}'
       |proEXPR
       | ( '\'' |IDENTIFIER|literal|'cast'|'addr'|'type') expr ;// # command syntax removed &
 
@@ -118,7 +119,7 @@ condExpr : expr colcom expr optInd
 ifExpr: IF condExpr;
 
 whenExpr : WHEN condExpr ; 
-pragma : '{.' optInd (exprColonEqExpr comma+)* optPar ('.}' | '}'); // was exprColonExpr but i can;t find it in doc catch
+pragma : '{.' optInd (exprColonEqExpr comma+)*  ('.}' | '}'); // was exprColonExpr but i can;t find it in doc catch
 //also changed the ? with a + to avoid an error
 identVis :  symbol opr?  ; 
 identVisDot : symbol DOT optInd symbol opr?;
@@ -128,12 +129,12 @@ declColonEquals : identWithPragma (comma identWithPragma)* //comma?
                   (COLON optInd typeDesc)? (EQUALS_OPERATOR optInd expr)?;
 identColonEquals : IDENTIFIER (comma IDENTIFIER)* comma? cOP eXP;
 cOP: (COLON types)? ( (optInd typeDesc)? ) ; //added keyw 
-eXP : EQUALS_OPERATOR? (  optInd expr)?;
+eXP : EQUALS_OPERATOR? (AT?  optInd expr)?;
 inlTupleDecl : TUPLE
-    '[' optInd  (identColonEquals (comma|semicolon)?)*  optPar ']';  /////definitly feha 7aga 3'lt 
+    '[' optInd  (identColonEquals (comma|semicolon)?)*   ']';  /////definitly feha 7aga 3'lt 
 
 extTupleDecl : TUPLE
-    COMMENT? (INDENT identColonEquals (INDENT identColonEquals)*)? ; /////////indeeeeeeeeeeeeeeeeeeeent
+    COMMENT? ( identColonEquals ( identColonEquals)*)? ; /////////indeeeeeeeeeeeeeeeeeeeent
 tupleClass : TUPLE ;
 paramList : OPEN_PAREN (declColonEquals ((comma|semicolon)declColonEquals )*)? CLOSE_PAREN ;
 paramListArrow : paramList? ('->' optInd typeDesc)?;
@@ -142,7 +143,7 @@ doBlock : DO paramListArrow pragmaStmt? colcom stmt;
 doBlocks : (DO paramListArrow pragmaStmt? colcom stmt)+; ///habdaaaaaaaaaaaaaaaaaaaaaaaa 3shan msh mwgoda fel doc
 procExpr : 'proc' paramListColon pragmaStmt? ('=' COMMENT? stmt)?; ///pragmaS changed with pragmastmt
 distinct : 'distinct' optInd typeDesc;
-forStmt : FOR (identWithPragma ( comma identWithPragma)* ) IN ((op2 '[' optInd exprList optPar ']' ) | expr) colcom stmt;
+forStmt : FOR (identWithPragma ( comma identWithPragma)* ) IN ((op2 '[' optInd exprList  ']' ) |  (expr op6? LESS_THAN? expr?)  ) colcom stmt;
 forExpr : forStmt ;
 
 
@@ -161,19 +162,20 @@ typeKeyw : VARIABLE | OUT | REF | PTR | 'shared' | TUPLE
 primary : typeKeyw typeDesc //was typedescK but i changed to typeDesc ( removed K)
         | BIND primary
   //| (identOrLiteral? prefixOperator) identOrLiteral (opr identOrLiteral?)* primarySuffix* 
-        | op5? identOrLiteral?  identOrLiteral  primarySuffix*
+        |  identOrLiteral?  identOrLiteral  primarySuffix*  //removed op5?
         | (symbol EQUALS_OPERATOR (DIGIT|symbol)+ (ADD_OPERATOR symbol)* )//hardcoded rule for test case 1
         | (symbol EQUALS_OPERATOR (DIGIT|symbol)+ (ADD_OPERATOR symbol)+ )
+        | 'swap' (identOrLiteral arrayConstr comma?)+
          ; //added identOrLiteral?;
 typeDesc : simpleExpr ;
 
 typeDefAux : simpleExpr
            | CONCEPT typeClass;
-postExprBlocks : COLON stmt? ( INDENT doBlock /////////////////INDENTSSSSSSSSSSSSSSSSSS
-                           | INDENT OF exprList COLON stmt
-                           | INDENT ELIF expr COLON stmt
-                           | INDENT EXCEPT exprList COLON stmt
-                           | INDENT ELSE COLON stmt )* ;
+postExprBlocks : COLON stmt? ( doBlock /////////////////INDENTSSSSSSSSSSSSSSSSSS
+                           |  OF exprList COLON stmt
+                           |  ELIF expr COLON stmt
+                           |  EXCEPT exprList COLON stmt
+                           |  ELSE COLON stmt )* ;
 exprStmt : simpleExpr
          (( EQUALS_OPERATOR optInd expr colonBody? )
          | ( expr (comma expr)*
@@ -194,21 +196,21 @@ discardStmt : DISCARD optInd expr?;
 breakStmt : BREAK optInd expr?;
 continueStmt : CONTINUE optInd expr? ;
 condStmt : (expr| IDENTIFIER paramList?) colcom  stmt COMMENT? 
-           ( (INDENT)? ELIF expr colcom stmt )*
-           (INDENT? ELSE colcom stmt)?; /////////////////// fuckin indent
+           (  ELIF expr colcom stmt )*
+           ( ELSE colcom stmt)?; /////////////////// fuckin indent
 ifStmt : IF condStmt;
 whenStmt : WHEN condStmt ;
 whileStmt : WHILE expr colcom stmt;
 ofBranch : OF exprList colcom stmt;//'\n'? stmt;
-ofBranches : ofBranch (INDENT? ofBranch)*
-                      (INDENT? ELIF expr colcom stmt)* ///////////INDENT bayza
-                      (INDENT? ELSE colcom stmt)? ;
-caseStmt : CASE expr COLON? //'\n'?  //COMMENT?
-              (INDENT? ofBranches INDENT /////////////indents bayzaaa
-              | INDENT? ofBranches);
-tryStmt : TRY colcom stmt (INDENT? EXCEPT|FINALLY) //Indent and &  ???????????
-           (INDENT? EXCEPT exprList colcom stmt)*
-           (INDENT? FINALLY colcom stmt)? ;
+ofBranches : ofBranch ( ofBranch)*
+                      ( ELIF expr colcom stmt)* ///////////INDENT bayza
+                      ( ELSE colcom stmt)? ;
+caseStmt : CASE expr types? COLON?  //'\n'?  //COMMENT?
+              ( ofBranches  /////////////indents bayzaaa
+              |  ofBranches);
+tryStmt : TRY colcom stmt ( EXCEPT|FINALLY) //Indent and &  ???????????
+           ( EXCEPT exprList colcom stmt)*
+           ( FINALLY colcom stmt)? ;
 tryExpr : TRY colcom stmt (optInd EXCEPT|FINALLY) /////////////////& removed    
            (optInd EXCEPT exprList colcom stmt)*
            (optInd FINALLY colcom stmt)? ;
@@ -219,9 +221,9 @@ staticStmt : STATIC colcom stmt;
 deferStmt : DEFER colcom stmt;
 asmStmt : 'asm' pragma? (STR_LIT | RSTR_LIT | TRIPLESTR_LIT);
 genericParam : symbol (comma symbol)* (colcom expr)? ('=' optInd expr)?;
-genericParamList : '[' optInd (genericParam ( (comma|SEMI_COLON)genericParam ) )?optPar ']'; /// \n badal ^
+genericParamList : '[' optInd (genericParam ( (comma|SEMI_COLON)genericParam ) )? ']'; /// \n badal ^
 pattern : '{' stmt '}';
-indAndComment : ( (INDENT COMMENT)? | COMMENT? ) ;
+indAndComment : ( ( COMMENT)?  ) ;
 routine : optInd identVis pattern? genericParamList?
   paramListColon pragma? (op5 COMMENT? stmt)? indAndComment; //removed = and added op5
 commentStmt : (COMMENT | DOC_COMMENT | MultiLineComment);
@@ -233,23 +235,25 @@ objectWhen : WHEN expr colcom objectPart COMMENT?
             (ELIF expr colcom objectPart COMMENT?)*
             (ELSE colcom objectPart COMMENT?)?;
 objectBranch : OF exprList colcom objectPart;
-objectBranches : objectBranch (INDENT expr colcom objectPart)*
-                      (INDENT ELSE colcom objectPart)?;
+objectBranches : objectBranch ( expr colcom objectPart)*
+                      ( ELSE colcom objectPart)?;
 objectCase : CASE identWithPragma COLON typeDesc COLON? COMMENT?
-            (INDENT objectBranches //////DED ///fuckin DED ?
-            | INDENT objectBranches);
-objectPart : INDENT objectPart  (INDENT objectPart)*//^+IND{=} DED ////////indent and DED and ^+
+            ( objectBranches //////DED ///fuckin DED ?
+            |  objectBranches);
+objectPart :  INDENT ( objectPart)*//^+IND{=} DED ////////indent and DED and ^+
            | objectWhen | objectCase | NIL | DISCARD | declColonEquals;
 object1 : OBJECT pragma? (OF typeDesc)? COMMENT? objectPart;
 typeClassParam : (VARIABLE | OUT)? symbol;
 typeClass : (typeClassParam  (',' typeClassParam)*)? (pragma)? (OF (typeDesc  (COMMA typeDesc)*  )?  )? ///^* removed
-               INDENT stmt; //& removed and fuckin indent
+                stmt; //& removed and fuckin indent
 typeDef : (identWithPragmaDot genericParamList? '=' optInd typeDefAux  
             indAndComment)|
-            (INDENT? IDENTIFIER EQUALS_OPERATOR types OPEN_BRACK sliceExpr comma types CLOSE_BRACK  ) ;
-varTuple : OPEN_PAREN optInd identWithPragma  (comma identWithPragma)* optPar CLOSE_PAREN EQUALS_OPERATOR optInd expr; /////^ removed
+            ( IDENTIFIER EQUALS_OPERATOR types OPEN_BRACK sliceExpr comma types CLOSE_BRACK  ) ;
+varTuple : OPEN_PAREN optInd identWithPragma  (comma identWithPragma)*  CLOSE_PAREN EQUALS_OPERATOR optInd expr; /////^ removed
 colonBody : (colcom (stmt )   doBlocks?) ;
-variable : (varTuple | identColonEquals | IDENTIFIER )  colonBody? (indAndComment);
+variable : (varTuple | identColonEquals | IDENTIFIER | recVar )  colonBody? (indAndComment);
+recVar: IDENTIFIER EQUALS_OPERATOR rec1; 
+rec1: IDENTIFIER OPEN_PAREN ( (expr |rec1)comma? )* CLOSE_PAREN; 
 bindStmt : BIND optInd qualifiedIdent (comma qualifiedIdent)*; //////////////^
 mixinStmt : MIXIN optInd qualifiedIdent  (comma qualifiedIdent)*; ////////////^
 pragmaStmt : pragma (COLON COMMENT? stmt)?;
@@ -264,8 +268,8 @@ complexOrSimpleStmt : (ifStmt | whenStmt | whileStmt
                     | caseStmt
                     | METHOD routine
                     | ITERATOR routine
-                    | MACRO routine
-                    | TEMPLATE routine
+                    | MACRO (routine| mroutine)
+                    | TEMPLATE (routine| troutine)
                     | CONVERTER routine
                     | TYPE sectionTypeDef
                     | CONST sectionConstant
@@ -277,7 +281,7 @@ complexOrSimpleStmt : (ifStmt | whenStmt | whileStmt
                     |simpleStmt;
 
 
-stmt : (INDENT? complexOrSimpleStmt ((INDENT? | SEMI_COLON) complexOrSimpleStmt )* )//DED) ///INDENT AND DED and ^
+stmt : ( complexOrSimpleStmt ((SEMI_COLON?) complexOrSimpleStmt )* )//DED) ///INDENT AND DED and ^
      | simpleStmt ( (SEMI_COLON) simpleStmt)*; /////^
 
 sectionTypeDef : COMMENT? typeDef? | ( (typeDef | COMMENT)  (INDENT (typeDef | COMMENT))* ); //// indent and P changed to 'p' and removed DED
@@ -285,31 +289,42 @@ sectionConstant:  COMMENT? constant? | ( (constant | COMMENT)  (INDENT (constant
 sectionVariable:  COMMENT? ( INDENT )? INDENT? variable | ( (variable | COMMENT)  (INDENT (variable | COMMENT))* ) ; //// indent and P changed to 'p' and removed DED
 ////////////////////////////('\n'|'\r')+
 echostmt: ECHO (echoparamList )  ; //(stmt)?;
-echoparamList : paramList |
+echoparamList : paramList | (    OPEN_PAREN (declColonEquals callproc3? ((comma|semicolon)declColonEquals callproc3? )*)? CLOSE_PAREN     ) 
+     |symbol |
  ( 
-       ( declColonEquals|(symbol arrayConstr) )
-        ( (comma|semicolon) 
-       ( (declColonEquals arrayConstr? ) ) 
+       ( declColonEquals|(symbol arrayConstr) ) (comma? symbol DOT symbol)?
+        ( (comma|semicolon)? 
+       ( (echoif) | (declColonEquals arrayConstr?   ) ) 
        )*  identOrLiteral? arrayindex? 
-       )?   ; //arrayconstr hardcoded
-
-arrayindex: OPEN_BRACK optInd exprList optPar CLOSE_BRACK;
-proutine: optInd identVis (OPEN_PAREN IDENTIFIER COLON ( (PROC callproc2) | types )  CLOSE_PAREN) (COLON types)? EQUALS_OPERATOR (stmt)?;
+       )?  
+         ; //arrayconstr hardcoded
+echoif : OPEN_PAREN stmt CLOSE_PAREN;
+arrayindex: OPEN_BRACK optInd exprList  CLOSE_BRACK;
+proutine: ( (optInd identVis (arrayConstr)?) | (('`$`'arrayConstr)?)  ) ( OPEN_PAREN (IDENTIFIER (COLON|EQUALS_OPERATOR) ( arrayofarray |(PROC callproc2) | types | procVar | symbol  ) comma?)+ CLOSE_PAREN) (COLON (types | arrayofarray) )? EQUALS_OPERATOR (stmt)?;
 callproc: ( (EQUALS_OPERATOR IDENTIFIER OPEN_PAREN (stmt) CLOSE_PAREN ) | (  OPEN_PAREN stmt CLOSE_PAREN DOT IDENTIFIER)  ); 
 callproc2: OPEN_PAREN IDENTIFIER COLON types CLOSE_PAREN;
+callproc3: OPEN_PAREN expr CLOSE_PAREN;
+
+arrayofarray: symbol arrayConstr; 
+
+mroutine: optInd identVis OPEN_PAREN (IDENTIFIER COLON types SEMI_COLON?)* CLOSE_PAREN COLON types EQUALS_OPERATOR (stmt)? ;
+troutine: (identVis OPEN_PAREN (symbol comma?)* CLOSE_PAREN (bracedot)? EQUALS_OPERATOR)
+      |(optInd identVis OPEN_PAREN (IDENTIFIER COLON types SEMI_COLON?)* CLOSE_PAREN COLON types EQUALS_OPERATOR (stmt)?);
+procVar: VARIABLE ( (sectionVariable ) | ( (IDENTIFIER arrayConstr)? (comma expr)* )  ); 
 keyw: DISCARD | INCLUDE  | WHILE | TRY //| CASE| FOR
         | FINALLY | EXCEPT  | BLOCK | CONST | LET
         | WHEN | VARIABLE | MIXIN | VARIABLE | OUT | REF | PTR | 'shared' | TUPLE
-         | PROC | ITERATOR | DISTINCT | OBJECT | ENUM ; ////////////////////////////////////////// ??????
+         | PROC | ITERATOR | DISTINCT | OBJECT | ENUM |NOT; ////////////////////////////////////////// ??????
 
-types: INT | STRING | BOOL | ARRAY;
+bracedot: '{.'  symbol CLOSE_BRACE; 
+types: INT | STRING | BOOL | ARRAY | UNTYPED;
 //////////////////////////////////////////////////
 ////////////
 
 
 
 
-
+UNTYPED: 'untyped';
 ARRAY: 'array';
 INCLUDE: 'include';
 BOOL: 'bool';
@@ -320,7 +335,7 @@ opr:  op0 | op1 | op2 | op3 | op4 | op5 | op6 | op7 | op8 | op9
         | OR | XOR | AND | IS | ISNOT  | NOTIN | OF | DIV 
         | MOD | SHL | SHR | NOT | STATIC | DOT DOT ;//| IN
 ///////////////////////////////////////////////////////////////////////
-INDENT:  '    '+  ;
+INDENT:  '    '+  -> skip ;
 // ///////////////////////////////////////
 INT :  'int';
 AND: 'and';
@@ -415,7 +430,7 @@ FLOAT64_LIT : HEX_LIT ['] FLOAT64_SUFFIX
 EXP:  ('e' | 'E' ) [+|-] DIGIT ( [_] DIGIT | DIGIT )*;
 INT_LIT : HEX_LIT | DEC_LIT | OCT_LIT | BIN_LIT ;
 HEX_LIT: '0' ('x' | 'X' )  HEXDIGIT  ( ([_] HEXDIGIT)* | HEXDIGIT* ); //ask about 0xf_f or 0xff
-DEC_LIT: DIGIT ( [_] DIGIT | DIGIT)*;
+DEC_LIT: '-'? DIGIT ( [_] DIGIT | DIGIT)*;
 OCT_LIT: '0' 'o' OCTDIGIT ( [_] OCTDIGIT | OCTDIGIT )*;
 BIN_LIT: '0' ('b' | 'B' ) BINDIGIT ( [_] BINDIGIT | BINDIGIT)*;
 HEXDIGIT: DIGIT | [A-F] | [a-f];
